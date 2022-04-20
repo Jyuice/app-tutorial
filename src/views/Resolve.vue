@@ -7,7 +7,7 @@ import { getImgList } from "../../module/getImgList";
 
 let active = ref(0)
 
-const questionId = window.history.state.current.split('?')[1].split('=')[1]
+const questionId = window.history.state.current.split('id=')[1]
 const imglist = getImgList(questionId)
 let len = ref(imglist.length)
 
