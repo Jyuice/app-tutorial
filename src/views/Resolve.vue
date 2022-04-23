@@ -13,20 +13,27 @@ let len = ref(imglist.length)
 
 let data = reactive({
     list: [...imglist],
+    isLoad: true,
     current: computed(() => data.list[active.value]),
 })
 
 const prev = () => {
+    data.isLoad = true
     if(active.value > 0) {
         active.value--
     }
 }
 const next = () => {
+    data.isLoad = true
     if(++active.value >= len.value) active.value = 0
 }
 
 const fallback = () => {
     window.history.go(-1)
+}
+
+const isnLoad = () => {
+    data.isLoad = false
 }
 </script>
 
@@ -46,7 +53,7 @@ const fallback = () => {
       <div id="steps">
           <step :active="active" :account="len" />
       </div>
-      <guide :current="data.current"/>
+      <guide :current="data.current" :isLoad="data.isLoad" @changeIsLoad="isnLoad"/>
   </div>
 </template>
 

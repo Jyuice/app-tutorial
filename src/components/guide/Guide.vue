@@ -1,10 +1,15 @@
 <script setup>
 import bubble from "./Bubble.vue";
+import loading from "../loading.vue"
 import { onMounted, onUpdated, ref } from "vue";
 
 const prop = defineProps({
-  current: Object
+  current: Object,
+  isLoad: Boolean
 })
+
+const emit = defineEmits(['changeIsLoad'])
+let load = ref(prop.isLoad)
 
 // canvas的参考尺寸
 const standardWidth = 390 * 0.9
@@ -45,11 +50,32 @@ onMounted(async() => {
 
   ctx = canvas.getContext('2d')
 
-  // ctx.fillStyle = "rgba(0,0,0, .3)";
-  // ctx.fillRect (0, 0, canvasWidth, canvasHeight);
+  img.onload = async function() {
+    await ctx.drawImage(img,0,0, canvasWidth, canvasHeight);
+    await emit('changeIsLoad')
+    // load.value = prop.isLoad
 
-  img.onload = function(){
-    ctx.drawImage(img,0,0, canvasWidth, canvasHeight);
+    // console.log(load.value)
+
+    // const sleep_500_ms = new Promise(resolve => {
+    //   setTimeout(() => {
+    //     resolve(400)
+    //   }, 500)
+    // })
+
+    // const drawImg = new Promise(async resolve => {
+    //   await ctx.drawImage(img,0,0, canvasWidth, canvasHeight);
+    //   await emit('changeIsLoad')
+    //   load.value = prop.isLoad
+    //   await resolve(200)
+    // })
+
+    // Promise.race([sleep_500_ms, drawImg]).then(res => {
+    //   console.log(res)
+    //   if (res === 400) {
+    //     load.value = prop.isLoad
+    //   }
+    // })
   }
   await changeImg()
   await showMask()
@@ -72,14 +98,11 @@ const changeImg = () => {
   } else {
     img.src = `./assets/${appName}/` + prop.current.src
   }
-  // ctx.save()
 }
 
 const showMask = () => {
   if(prop.current.clip) {
     let [proportionX, proportionY] = getProportion(canvasWidth, canvasHeight)
-    // ctx.restore()
-    // ctx.globalCompositeOperation = "source-over"
     ctx.fillStyle = "rgba(0,0,0, .3)";
     ctx.fillRect (0, 0, canvasWidth, canvasHeight);
     // eval(prop.current.clip)
@@ -90,7 +113,6 @@ const showMask = () => {
         return item * proportionX
       }
     }))
-    // ctx.globalCompositeOperation = "destination-over"
   }
 }
 
@@ -110,9 +132,14 @@ const getClip = e => {
     y = 0
   }
 }
+
+
 </script>
 
 <template>
+  <loading v-show="prop.isLoad" :width="canvasWidth" :height="canvasHeight" />
+  <!-- <loading v-show="load" :width="canvasWidth" :height="canvasHeight" /> -->
+  <!-- <loading :width="canvasWidth" :height="canvasHeight" /> -->
   <canvas id="canvas" @click="getClip"></canvas>
   <div id="pic-guide">
     <bubble id="bubble" :class="current.clip.length ? 'zoomIn' : ''" :msg="current.msg" />
